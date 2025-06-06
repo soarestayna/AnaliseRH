@@ -1,0 +1,59 @@
+table Medidas
+	lineageTag: 7de43e58-2e8e-4d3e-a294-6bfdfc95f1e2
+
+	measure TotalFuncionarios = COUNTROWS(DatasetRH)
+		formatString: 0.000
+		lineageTag: b5390142-e862-456f-9e1f-1ae7aa74ce2b
+
+	measure TotalFeminino = CALCULATE([TotalFuncionarios],DatasetRH[Genero] = "Feminino")
+		formatString: 0
+		lineageTag: 4549d21e-7f22-4028-b0c9-0da8d6243be6
+
+	measure TotalMasculino = CALCULATE([TotalFuncionarios],DatasetRH[Genero] = "Masculino")
+		formatString: 0
+		lineageTag: d6a78d00-5baf-42ce-a4bc-4c429a339e45
+
+	measure '% Feminino' = DIVIDE([TotalFeminino],[TotalFuncionarios],0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: b95c5b41-1958-4899-aa5c-6ed0ca97ca0a
+
+	measure '% Masculino' = DIVIDE([TotalMasculino],[TotalFuncionarios],0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 5ca38e6d-772a-456c-87dc-d1ec557c84fd
+
+	measure MediaSalario = AVERAGE(DatasetRH[Salario_Mensal])
+		formatString: "R$"\ #,0.00000;-"R$"\ #,0.00000;"R$"\ #,0.00000
+		lineageTag: 66d86a18-5f1e-4e87-8569-72ea9dd19acd
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure Totalfuncionarios_promover = CALCULATE([TotalFuncionarios],DatasetRH[Status_Promocao] = "Não Considerar Promocao")
+		formatString: 0
+		lineageTag: 03a79b0f-c87e-4984-b31a-5c1e9f1afe6b
+
+	measure Totalfuncionarios_naopromover = CALCULATE([TotalFuncionarios],DatasetRH[Status_Promocao] = "Não Considerar Promocao")
+		formatString: 0
+		lineageTag: 9effc368-3d9e-42bc-ae24-29a58732bd7b
+
+	measure '% Promover' = DIVIDE([Totalfuncionarios_promover],[TotalFuncionarios],0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: d4e0f4c0-c3cd-4c9d-9cba-17e9d5d2fd83
+
+	measure '% NaoPromover' = DIVIDE([Totalfuncionarios_naopromover],[TotalFuncionarios],0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: a6c497c5-b67e-43cb-b938-28cd37775ae8
+
+	partition Medidas = m
+		mode: import
+		source =
+				let
+				    Fonte = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Coluna 1" = _t]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(Fonte,{{"Coluna 1", type text}}),
+				    #"Colunas Removidas" = Table.RemoveColumns(#"Tipo Alterado",{"Coluna 1"})
+				in
+				    #"Colunas Removidas"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navegação
+
